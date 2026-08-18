@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Brain Tumor AI</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+
+</head>
+
+
+<body>
+
+
+<header class="header">
+
+    <div class="brand">
+
+        <div class="brand-icon">
+            🧠
+        </div>
+
+        <div>
+
+            <div class="brand-name">
+                Brain Tumor AI
+            </div>
+
+            <div class="brand-subtitle">
+                AI-assisted brain MRI classification
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <nav>
+
+        <a href="#home">Home</a>
+
+        <a href="#analysis">Analysis</a>
+
+        <a href="#contact">Contact</a>
+
+    </nav>
+
+</header>
+
+
+
+<main id="home">
+
+
+<section class="hero">
+
+    <div class="hero-small">
+        AI-POWERED BRAIN MRI ANALYSIS
+    </div>
+
+    <h1>
+        Brain Tumor AI
+    </h1>
+
+    <p>
+        Brain MRI classification with an interactive AI assistant
+    </p>
+
+</section>
+
+
+
+<section class="top-grid">
+
+
+    <div class="upload-card">
+
+        <div class="label">
+            INPUT
+        </div>
+
+        <h2>
+            Upload MRI Image
+        </h2>
+
+
+        <form
+            action="{{ url_for('predict') }}"
+            method="POST"
+            enctype="multipart/form-data"
+            id="uploadForm"
+        >
+
+            <div class="upload-line">
+
+                <label
+                    for="fileInput"
+                    class="choose-button"
+                >
+                    📁 Choose MRI
+                </label>
+
+
+                <input
+                    type="file"
+                    id="fileInput"
+                    name="file"
+                    accept=".jpg,.jpeg,.png,.bmp"
+                    required
+                >
+
+
+                <span id="fileName">
+                    No file selected
+                </span>
+
+            </div>
+
+
+            <button
+                type="submit"
+                class="analyze-button"
+                id="analyzeButton"
+            >
+                ⚡ Analyze MRI
+            </button>
+
+        </form>
+
+
+        {% if error %}
+
+        <div class="error">
+            {{ error }}
+        </div>
+
+        {% endif %}
+
+    </div>
+
+
+
+    <div class="small-info-card">
+
+        <div class="label">
+            AI ASSISTANT
+        </div>
+
+        <h2>
+            Ask Brain Tumor AI
+        </h2>
+
+        <p>
+            Ask questions about brain tumors,
+            MRI, symptoms, diagnosis or treatment.
+        </p>
+
+        <div class="info-tag">
+            ✦ Dynamic AI answers
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<section
+    class="workspace {% if ai_active %}question-active{% endif %}"
+    id="analysis"
+>
+
+
+    <!-- ANALYSIS RESULT -->
+
+    <div class="analysis-card">
+
+        <div class="card-header">
+
+            <div>
+
+                <div class="label">
+                    MODEL OUTPUT
+                </div>
+
+                <h2>
+                    Analysis Result
+                </h2>
+
+            </div>
+
+
+            {% if analyzed %}
+
+            <span class="complete">
+                ✓ Complete
+            </span>
+
+            {% endif %}
+
+        </div>
+
+
+        {% if analyzed %}
+
+        <div class="prediction-box">
+
+            <div class="prediction-label">
+                PREDICTED CLASS
+            </div>
+
+            <div class="prediction">
+                {{ prediction | upper }}
+            </div>
+
+        </div>
+
+
+        <div class="confidence">
+
+            <div class="confidence-header">
+
+                <span>
+                    Confidence Score
+                </span>
+
+                <strong>
+                    {{ "%.2f"|format(confidence) }}%
+                </strong>
+
+            </div>
+
+
+            <div class="bar">
+
+                <div
+                    class="bar-fill"
+                    style="width: {{ confidence }}%"
+                ></div>
+
+            </div>
+
+        </div>
+
+
+        {% else %}
+
+        <div class="empty">
+
+            <span>
+                🧠
+            </span>
+
+            <p>
+                Upload an MRI image to see the result.
+            </p>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+
+
+    <!-- AI ASSISTANT -->
+
+    <div class="ai-card">
+
+        <div class="card-header">
+
+            <div>
+
+                <div class="label">
+                    GENERATIVE AI
+                </div>
+
+                <h2>
+                    Ask Brain Tumor AI
+                </h2>
+
+            </div>
+
+            <span class="groq">
+                Groq AI
+            </span>
+
+        </div>
+
+
+        <form
+            action="{{ url_for('ask') }}"
+            method="POST"
+            id="questionForm"
+        >
+
+            <div class="search-box">
+
+                <span>
+                    ✦
+                </span>
+
+                <input
+                    type="text"
+                    name="question"
+                    id="questionInput"
+                    placeholder="Ask anything about brain tumors..."
+                    value="{{ user_question or '' }}"
+                    maxlength="1000"
+                    required
+                >
+
+                <button
+                    type="submit"
+                    id="askButton"
+                >
+                    Ask AI
+                </button>
+
+            </div>
+
+        </form>
+
+
+        {% if not ai_answer %}
+
+        <div class="suggestions">
+
+            <button
+                type="button"
+                onclick="setQuestion('What is glioma?')"
+            >
+                What is glioma?
+            </button>
+
+            <button
+                type="button"
+                onclick="setQuestion('What are the symptoms of glioma?')"
+            >
+                Symptoms?
+            </button>
+
+            <button
+                type="button"
+                onclick="setQuestion('Is glioma dangerous?')"
+            >
+                Is it dangerous?
+            </button>
+
+            <button
+                type="button"
+                onclick="setQuestion('How is glioma treated?')"
+            >
+                Treatment?
+            </button>
+
+            <button
+                type="button"
+                onclick="setQuestion('What is the difference between glioma and meningioma?')"
+            >
+                Glioma vs Meningioma
+            </button>
+
+        </div>
+
+        {% endif %}
+
+
+
+        {% if ai_answer %}
+
+        <div class="answer-box">
+
+            <div class="answer-header">
+
+                <span>
+                    ✦ AI Response
+                </span>
+
+                <small>
+                    Generated now
+                </small>
+
+            </div>
+
+
+            <div class="asked">
+
+                <span>
+                    Question:
+                </span>
+
+                <strong>
+                    {{ user_question }}
+                </strong>
+
+            </div>
+
+
+            <div class="answer">
+                {{ ai_answer }}
+            </div>
+
+
+            <button
+                type="button"
+                class="another"
+                onclick="askAnother()"
+            >
+                Ask another question →
+            </button>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+
+</section>
+
+
+
+<div class="disclaimer">
+
+    <strong>Important:</strong>
+
+    This application is an AI-based research and
+    educational tool. The prediction is not a medical
+    diagnosis and should not replace evaluation by a
+    qualified healthcare professional.
+
+</div>
+
+
+
+<section
+    class="contact"
+    id="contact"
+>
+
+    <div>
+
+        <span class="label">
+            PROJECT CONTACT
+        </span>
+
+        <strong>
+            Ajay Vardhan
+        </strong>
+
+    </div>
+
+
+    <div class="contact-links">
+
+        <a href="mailto:ajayvardhannaik@gmail.com">
+            ✉ Email
+        </a>
+
+        <a href="tel:+919182260178">
+            ☎ +91 91822 60178
+        </a>
+
+    </div>
+
+</section>
+
+
+</main>
+
+
+
+<footer>
+
+    <span>
+        Brain Tumor AI
+    </span>
+
+    <span>
+        Done by <strong>Ajay Vardhan</strong>
+    </span>
+
+</footer>
+
+
+
+<script>
+
+
+const fileInput =
+    document.getElementById(
+        "fileInput"
+    );
+
+
+const fileName =
+    document.getElementById(
+        "fileName"
+    );
+
+
+if (fileInput) {
+
+    fileInput.addEventListener(
+        "change",
+        function () {
+
+            if (
+                this.files.length > 0
+            ) {
+
+                fileName.textContent =
+                    this.files[0].name;
+
+                fileName.classList.add(
+                    "selected"
+                );
+
+            }
+
+        }
+    );
+
+}
+
+
+
+const uploadForm =
+    document.getElementById(
+        "uploadForm"
+    );
+
+
+const analyzeButton =
+    document.getElementById(
+        "analyzeButton"
+    );
+
+
+if (uploadForm) {
+
+    uploadForm.addEventListener(
+        "submit",
+        function () {
+
+            if (
+                fileInput.files.length === 0
+            ) {
+                return;
+            }
+
+            analyzeButton.textContent =
+                "⏳ Analyzing...";
+
+            analyzeButton.disabled =
+                true;
+
+        }
+    );
+
+}
+
+
+
+const questionInput =
+    document.getElementById(
+        "questionInput"
+    );
+
+
+function setQuestion(question) {
+
+    questionInput.value =
+        question;
+
+    questionInput.focus();
+
+}
+
+
+
+function askAnother() {
+
+    questionInput.value =
+        "";
+
+    questionInput.focus();
+
+}
+
+
+
+const questionForm =
+    document.getElementById(
+        "questionForm"
+    );
+
+
+const askButton =
+    document.getElementById(
+        "askButton"
+    );
+
+
+if (questionForm) {
+
+    questionForm.addEventListener(
+        "submit",
+        function () {
+
+            if (
+                !questionInput.value.trim()
+            ) {
+
+                return;
+
+            }
+
+            askButton.textContent =
+                "Thinking...";
+
+            askButton.disabled =
+                true;
+
+        }
+    );
+
+}
+
+</script>
+
+
+</body>
+
+</html>
